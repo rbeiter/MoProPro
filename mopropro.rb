@@ -86,7 +86,7 @@ class MoProPro
     status_start("Adding #{devices.size} device#{devices.size == 1 ? "" : "s"}")
 
     add_device_page = @agent.get("https://developer.apple.com/iphone/manage/devices/add.action")
-    page = add_device_page.form_with(:name => "save") do |form|
+    page = add_device_page.form_with(:name => "add") do |form|
       index = 0
       devices.each_pair{ |udid, name|
         form["deviceNameList[#{index}]"]   = name
@@ -139,14 +139,13 @@ class MoProPro
     matching_profiles.sort! do |a,b| 
       aah = (a[:name] =~ /Ad ?Hoc/i).nil?
       bah = (b[:name] =~ /Ad ?Hoc/i).nil?
-      return 0 if aah == bah 
-      (aah ? 1 : -1)
+      (aah == bah ? 0 : (aah ? 1 : -1))
     end
 
     # Visit each of the matching profiles until we find an Ad Hoc profile
     matching_profiles.each do |profile|
       edit_page = @agent.click(profile[:link])
-      form = edit_page.form_with(:name => "saveDistribution")
+      form = edit_page.form_with(:name => "save")
       # Check if this is an Ad Hoc profile
       if form.radiobutton_with(:value => "limited").checked
         # Fix a hidden input, normally done by JavaScript
@@ -309,13 +308,13 @@ class MoProPro
     if not STDIN.tty?
       devices.merge!(YAML::load(STDIN))
     end
-
+    
     status_start("Validating input")
     devices.each_pair {|udid, name| validate(udid, name)}
     status_end()
 
     begin
-      @agent = WWW::Mechanize.new
+      @agent = Mechanize.new
       login(username, password)
       filtered_devices = filter_devices(devices)
       add_devices(filtered_devices)
@@ -324,7 +323,7 @@ class MoProPro
         error("No matching Ad Hoc provisioning profile found") if not profile
         retrieve_new_profile(profile)
       end
-    rescue WWW::Mechanize::ResponseCodeError => ex
+    rescue Mechanize::ResponseCodeError => ex
       error("HTTP #{ex.message}")
     end
   end
