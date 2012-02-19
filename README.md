@@ -43,6 +43,7 @@ tool that you run from your project directory.
         -u, --username USERNAME          ADC Username
         -p, --password PASSWORD          ADC Password
             --no-provisioning            Do not create a provisioning profile, only add devices
+        -tf, --testflight                When piping in devices from a file, use the TestFlight format instead of YAML
         -v, --verbose                    Be verbose
 
 
@@ -81,6 +82,10 @@ Create a YAML file with device entries
 And pipe it through MoProPro
 
     cat devices.yml | mopropro -u user -p passwd
+
+You can pipe in a TestFlight format device export using the -tf option
+
+    cat testflight_devices.txt | mopropro -u user -p passwd -tf
 
 ### Verbose
 
