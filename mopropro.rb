@@ -277,6 +277,10 @@ class MoProPro
       opts.on("-v", "--verbose", "Be verbose") do |v|
         @verbose = true
       end
+
+      opts.on("-tf", "--testflight", "Accept testflight style devices export") do |tf|
+      	@testflight = true
+      end
     end
     
     @optparser.parse!(args)
@@ -306,9 +310,21 @@ class MoProPro
     devices[args[0]] = args[1] if args.size == 2
 
     if not STDIN.tty?
-      devices.merge!(YAML::load(STDIN))
+    	if @testflight
+    		first = true;
+    		STDIN.read.split("\n").each do |split|
+    			if first
+    				first = false
+    			else
+    				pair = split.split("\t")
+    				devices[pair[0]] = pair[1]
+				end
+    		end
+    	else
+	      devices.merge!(YAML::load(STDIN))
+    	end
     end
-    
+
     status_start("Validating input")
     devices.each_pair {|udid, name| validate(udid, name)}
     status_end()
